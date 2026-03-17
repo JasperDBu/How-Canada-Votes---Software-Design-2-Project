@@ -2,9 +2,9 @@ import sys
 import csv
 
 def standardize_name(name):
-    # ==========================================
+    
     # STANDARDIZE PROVINCE NAMES
-    # ==========================================
+    
     # This helps match names between both files
     name = str(name).strip()
 
@@ -22,9 +22,9 @@ def standardize_name(name):
 
 
 def load_healthcare(filename):
-    # ==========================================
+    
     # LOAD CLEANED HEALTHCARE DATA
-    # ==========================================
+   
     # Reads the cleaned file and stores it in a
     # dictionary like:
     # { "Ontario": "90.6", "Quebec": "78.5", ... }
@@ -50,9 +50,9 @@ def load_healthcare(filename):
 
 
 def main(argv):
-    # ==========================================
+    
     # CHECK COMMAND LINE ARGUMENTS
-    # ==========================================
+   
     # The program expects:
     # 1. cleaned healthcare CSV
     # 2. turnout CSV
@@ -67,9 +67,9 @@ def main(argv):
     # Load healthcare data first
     healthcare_data = load_healthcare(healthcare_file)
 
-    # ==========================================
+    
     # OPEN TURNOUT FILE
-    # ==========================================
+   
     try:
         turnout_in = open(turnout_file, newline='', encoding="utf-8-sig")
     except IOError:
@@ -95,9 +95,9 @@ def main(argv):
 
     count = 0
 
-    # ==========================================
+    
     # MERGE THE TWO FILES
-    # ==========================================
+    
     for row in reader:
         province = standardize_name(row.get("Province", ""))
         turnout = row.get("Percentage of Voter Turnout 2019", "").strip()
@@ -119,8 +119,8 @@ def main(argv):
     print(f"Success! Created {output_file} with {count} rows.")
 
 
-# ==========================================
+
 # RUN PROGRAM
-# ==========================================
+
 if __name__ == "__main__":
     main(sys.argv)
