@@ -42,6 +42,7 @@ import sys
 # the fields on each line in turn
 import csv
 
+# Class definition for regions, this is where all the collected values will be kept. 
 class region:
     def __init__(self, name):
         self.name = name
@@ -83,18 +84,20 @@ def main(argv):
         print(f"Error: year period '{argv[2]}' is not an int",
                 file=sys.stderr)
         sys.exit(1)    
+
+    
     voting_filename = argv[3]
     NHPI_filename = argv [4]
 
+
     regions = [
-        region("ontario"),
-        region("quebec"),
-        region("british columbia"),
-        region("prarie region"),
-        region("atlantic region")
+        region("Ontario"),
+        region("Quebec"),
+        region("British Columbia"),
+        region("Prarie Region"),
+        region("Atlantic Region")
         ]
 
-    
 
     region_dict = {
         "ontario" : "ontario",
@@ -104,18 +107,18 @@ def main(argv):
         "atlantic region" : ["newfoundland and labrador", "prince edward island", "nova scotia", "newbrunswick"]
         }
 
+
     NHPI_parsing( NHPI_filename, year_period, NHPI_method_to_match, regions)
 
     for geo_region in regions:
         print(f"Percent calulated for {geo_region.name} is {geo_region.NHPI_percent}")
-    #
-    #   End of Function
-    #
 
 
-
-def NHPI_parsing(filename, year_period, NHPI_method_to_match, regions):
-
+##
+##  open_csv_file:
+##  This function takes a file name and opens a csv file and returns the opened file. This function also has error checks.
+##
+def open_csv_file(filename):
     #
     # Open the input file.  The encoding argument
     # indicates that we want to handle the BOM (if present)
@@ -139,40 +142,60 @@ def NHPI_parsing(filename, year_period, NHPI_method_to_match, regions):
                 filename, err), file=sys.stderr)
         sys.exit(1)
 
-    #
-    # Create a CSV (Comma Separated Value) reader based on this
-    # open file handle.  We can use the reader in a loop iteration
-    # in order to access each line in turn.
-    #
+    return infile
+
+
+##
+##  header_column_search_index: 
+##  This function takes a header row and the target field. It finds the column index of the target field using 
+##  the header row to match a case-insensitive check   
+##
+def header_column_search_index( header, target):
+
+    column_number = 0
+    target = target.lower()
+    
+    for column in header:
+        try:
+            if target in column.lower():
+                return column_number
+            else:
+                column_number += 1
+        except ValueError as err:
+            print(f"Error: string to match '{column}' is not a string : {err}",
+                file=sys.stderr)
+            sys.exit(1)
+    
+    print(f"Error: could not find '{target}' column in header row", file=sys.stderr)
+    sys.exit(1)
+    
+        
+
+def retrieve_data(row, index):
+    try:
+        data = row[index].lower()
+    except ValueError as err:
+        print(f"Error: row data '{row[index]}' is not a string : {err}",
+                file=sys.stderr)
+        sys.exit(1)
+    return data
+
+
+def NHPI_parsing(filename, year_period, NHPI_method_to_match, regions):
+
+    infile = open_csv_file(filename)
+
+    # Using csv.reader to read the csv file and seperate it into rows
     reader = csv.reader(infile)
 
-
+    #variables for csv markers
     header = None
     line_number = 0
-    column_number = 0
-    first_column_index_to_search = 0
-    second_column_index_to_search = 0
-    third_column_index_to_search = 0
-    fourth_column_index_to_search = 0
 
-    end_date = "2025-04"
-    start_date =f"{ 2025 - year_period }-04"
+    #Constants for target year period start date and end date
+    END_DATE = "2025-04"
+    START_DATE =f"{ 2025 - year_period }-04"
 
-    NHPI_first_search = "New Housing Price Indexes"
-    NHPI_second_search = "REF_DATE"
-    NHPI_third_search = "Value"
-    NHPI_fourth_search = "Geo"
-
-
-    #
-    #   Parse each line of data from the CSV reader, which will break   
-    #   the lines into fields based on the comma delimiter.
-    #
-    #   The field for each line are stored in a different row data array
-    #   for each line of the data.
-    #
-    #   We then take the data and assign them into a "tuple" which we
-    #   can store in the data array for later use
     #
     for row in reader:
 
@@ -182,113 +205,65 @@ def NHPI_parsing(filename, year_period, NHPI_method_to_match, regions):
         # information
         if header is None:
 
-            # Goes through header row and finds the column_index_to_search by matching strings
-            for column in row:
-                if first_column_index_to_search != 0 and second_column_index_to_search != 0 and third_column_index_to_search and fourth_column_index_to_search != 0:
-                    break
-
-                try:
-                    if NHPI_first_search.lower() in column.lower():
-                        first_column_index_to_search = column_number
-                except ValueError as err:
-                    print(f"Error: string to match '{NHPI_first_search}' is not a string",
-                        file=sys.stderr)
-                    sys.exit(1)
-                
-                try:
-                    if NHPI_second_search.lower() in column.lower():
-                        second_column_index_to_search = column_number
-                except ValueError as err:
-                    print(f"Error: string to match '{NHPI_second_search}' is not a string",
-                        file=sys.stderr)
-                    sys.exit(1) 
-                
-                try:
-                    if NHPI_third_search.lower() in column.lower():
-                        third_column_index_to_search = column_number
-                except ValueError as err:
-                    print(f"Error: string to match '{NHPI_third_search}' is not a string",
-                        file=sys.stderr)
-                    sys.exit(1) 
-                
-                try:
-                    if NHPI_fourth_search.lower() in column.lower():
-                        fourth_column_index_to_search = column_number
-                except ValueError as err:
-                    print(f"Error: string to match '{NHPI_fourth_search}' is not a string",
-                        file=sys.stderr)
-                    sys.exit(1) 
-                column_number += 1
-            
             header = row
 
+            NHPI = header_column_search_index(header, "New Housing Price Indexes")
+            REF_DATE = header_column_search_index(header, "Ref_date")
+            VALUE = header_column_search_index(header, "Value")
+            GEO = header_column_search_index(header, "Geo")
 
         else:
             # here we process the data rows
 
             # make sure that the row is long enough
-            if len(row) <= first_column_index_to_search and len(row) <= second_column_index_to_search:
-                print(f"Error: requested field {first_column_index_to_search} and {second_column_index_to_search}",
-                    f"from line {line_number} which",
-                    f"only contains {len(row)} fields",
+            if len(row) != len(header):
+                print(f"Error: invalid row on line {line_number}",
                         file=sys.stderr)
                 sys.exit(1)
 
-            # Obtain the value from the indicated field
-            try:
-                #Removes case-sensitive search
-                first_row_data_to_check = row[first_column_index_to_search].lower()
-            except ValueError as err:
-                print(f"Error: row data '{row[first_column_index_to_search]}' is not a string",
-                        file=sys.stderr)
-                sys.exit(1)
+            # Obtain the value from 'New House Price Index' field
+            nhpi_data = retrieve_data(row, NHPI)
                 
-            try:
-                second_row_data_to_check = row[second_column_index_to_search].lower()
-            except ValueError as err:
-                print(f"Error: row data '{row[second_column_index_to_search]}' is not a string",
-                        file=sys.stderr)
-                sys.exit(1)
-            
-            try:
-                third_row_data_to_check = row[third_column_index_to_search].lower()
-            except ValueError as err:
-                print(f"Error: row data '{row[third_column_index_to_search]}' is not a string",
-                        file=sys.stderr)
-                sys.exit(1)
-            
-            try:
-                fourth_row_data_to_check = row[fourth_column_index_to_search].lower()
-            except ValueError as err:
-                print(f"Error: row data '{row[fourth_column_index_to_search]}' is not a string",
-                        file=sys.stderr)
-                sys.exit(1)
+            if NHPI_method_to_match in nhpi_data:
 
-            # The "in" keyword allows us to search for a substring
-            # within another string
-            if NHPI_method_to_match in first_row_data_to_check:
-                if start_date in second_row_data_to_check:
-                    try:
-                        start = float(third_row_data_to_check)
-                    except ValueError as err:
-                        print(f"Error: string to int '{second_row_data_to_check}' is not a number",
+                ref_date_data = retrieve_data(row, REF_DATE)
+
+                try:
+                    value_data = float(retrieve_data(row, VALUE))
+                except ValueError as err:
+                    print(f"Error: {row[VALUE]} is not a number : {err}",
                             file=sys.stderr)
-                        sys.exit(1)
-                elif end_date in second_row_data_to_check: 
-                    try:
-                        end = float(third_row_data_to_check)
-                    except ValueError as err:
-                        print(f"Error: string to int '{third_row_data_to_check}' is not a number",
-                            file=sys.stderr)
-                        sys.exit(1)    
+                    sys.exit(1)
+
+                if START_DATE in ref_date_data:
+
+                    start = value_data
+
+                elif END_DATE in ref_date_data: 
+
+                    end = value_data
+
+                    geo_data = retrieve_data(row, GEO)
+                    
                     for geo_region in regions:
-                        if fourth_row_data_to_check in geo_region.name:
+                        if geo_data in geo_region.name.lower():
                             geo_region.NHPI_percent = round(end - start, 1)
-
                 
     # close the input file
     infile.close()
 
+
+def vote_parsing(filename, regions, region_dict):
+
+    infile = open_csv_file(filename)
+
+    reader = csv.reader(infile)
+
+    infile.close
+
+    
+        
+    
 
 
 ##
