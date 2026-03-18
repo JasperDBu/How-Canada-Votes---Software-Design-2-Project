@@ -153,13 +153,16 @@ def NHPI_parsing(filename, year_period, NHPI_method_to_match, regions):
     first_column_index_to_search = 0
     second_column_index_to_search = 0
     third_column_index_to_search = 0
+    fourth_column_index_to_search = 0
 
     end_date = "2025-04"
     start_date =f"{ 2025 - year_period }-04"
 
     NHPI_first_search = "New Housing Price Indexes"
     NHPI_second_search = "REF_DATE"
-    NHPI_third_search = "Geo"
+    NHPI_third_search = "Value"
+    NHPI_fourth_search = "Geo"
+
 
     #
     #   Parse each line of data from the CSV reader, which will break   
@@ -181,7 +184,7 @@ def NHPI_parsing(filename, year_period, NHPI_method_to_match, regions):
 
             # Goes through header row and finds the column_index_to_search by matching strings
             for column in row:
-                if first_column_index_to_search != 0 and second_column_index_to_search != 0 and third_column_index_to_search != 0:
+                if first_column_index_to_search != 0 and second_column_index_to_search != 0 and third_column_index_to_search and fourth_column_index_to_search != 0:
                     break
 
                 try:
@@ -205,6 +208,14 @@ def NHPI_parsing(filename, year_period, NHPI_method_to_match, regions):
                         third_column_index_to_search = column_number
                 except ValueError as err:
                     print(f"Error: string to match '{NHPI_third_search}' is not a string",
+                        file=sys.stderr)
+                    sys.exit(1) 
+                
+                try:
+                    if NHPI_fourth_search.lower() in column.lower():
+                        fourth_column_index_to_search = column_number
+                except ValueError as err:
+                    print(f"Error: string to match '{NHPI_fourth_search}' is not a string",
                         file=sys.stderr)
                     sys.exit(1) 
                 column_number += 1
@@ -245,27 +256,34 @@ def NHPI_parsing(filename, year_period, NHPI_method_to_match, regions):
                 print(f"Error: row data '{row[third_column_index_to_search]}' is not a string",
                         file=sys.stderr)
                 sys.exit(1)
+            
+            try:
+                fourth_row_data_to_check = row[fourth_column_index_to_search].lower()
+            except ValueError as err:
+                print(f"Error: row data '{row[fourth_column_index_to_search]}' is not a string",
+                        file=sys.stderr)
+                sys.exit(1)
 
             # The "in" keyword allows us to search for a substring
             # within another string
             if NHPI_method_to_match in first_row_data_to_check:
                 if start_date in second_row_data_to_check:
                     try:
-                        start = int(second_row_data_to_check)
+                        start = float(third_row_data_to_check)
                     except ValueError as err:
                         print(f"Error: string to int '{second_row_data_to_check}' is not a number",
                             file=sys.stderr)
                         sys.exit(1)
                 elif end_date in second_row_data_to_check: 
                     try:
-                        end = int(second_row_data_to_check)
+                        end = float(third_row_data_to_check)
                     except ValueError as err:
-                        print(f"Error: string to int '{second_row_data_to_check}' is not a number",
+                        print(f"Error: string to int '{third_row_data_to_check}' is not a number",
                             file=sys.stderr)
                         sys.exit(1)    
                     for geo_region in regions:
-                        if third_row_data_to_check in geo_region.name:
-                            geo_region.NHPI_percent = end - start
+                        if fourth_row_data_to_check in geo_region.name:
+                            geo_region.NHPI_percent = round(end - start, 1)
 
                 
     # close the input file
