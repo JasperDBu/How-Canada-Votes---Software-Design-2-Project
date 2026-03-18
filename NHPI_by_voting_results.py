@@ -42,7 +42,16 @@ import sys
 # the fields on each line in turn
 import csv
 
-
+class region:
+    def __init__(self, name):
+        self.name = name
+    total_seats = 0
+    NHPI_percent = 0
+    Lib_seats = 0
+    CPC_seats = 0
+    BQ_seats = 0
+    NDP_seats = 0
+    GP_seats = 0
 
 
 ##
@@ -77,6 +86,35 @@ def main(argv):
     voting_filename = argv[3]
     NHPI_filename = argv [4]
 
+    regions = [
+        region("ontario"),
+        region("quebec"),
+        region("british columbia"),
+        region("prarie region"),
+        region("atlantic region")
+        ]
+
+    
+
+    region_dict = {
+        "ontario" : "ontario",
+        "quebec" : "quebec",
+        "british columbia" : "british columbia",
+        "prarie region" : ["manitoba", "saskaatchewan", "alberta"],
+        "atlantic region" : ["newfoundland and labrador", "prince edward island", "nova scotia", "newbrunswick"]
+        }
+
+    NHPI_parsing( NHPI_filename, year_period, NHPI_method_to_match, regions)
+
+    for geo_region in regions:
+        print(f"Percent calulated for {geo_region.name} is {geo_region.NHPI_percent}")
+    #
+    #   End of Function
+    #
+
+
+
+def NHPI_parsing(filename, year_period, NHPI_method_to_match, regions):
 
     #
     # Open the input file.  The encoding argument
@@ -90,7 +128,7 @@ def main(argv):
     #    https://docs.python.org/3/library/csv.html#id4
     #
     try:
-        infile = open(NHPI_filename, newline='', encoding="utf-8-sig")
+        infile = open(filename, newline='', encoding="utf-8-sig")
 
     except IOError as err:
         # Here we are using the python format() function.
@@ -98,9 +136,8 @@ def main(argv):
         # the string it is called on in the order in which
         # they are given.
         print("Unable to open csv file '{}' : {}".format(
-                NHPI_filename, err), file=sys.stderr)
+                filename, err), file=sys.stderr)
         sys.exit(1)
-
 
     #
     # Create a CSV (Comma Separated Value) reader based on this
@@ -110,30 +147,22 @@ def main(argv):
     reader = csv.reader(infile)
 
 
-    #
-    # Create a CSV (Comma Separated Value) reader *writer* that will
-    # output to standard output.  Using this writer to format our
-    # output will ensure that the structure is correct and output
-    # fields get quoted properly.
-    writer = csv.writer(sys.stdout)
-
-
     header = None
     line_number = 0
     column_number = 0
     first_column_index_to_search = 0
     second_column_index_to_search = 0
+    third_column_index_to_search = 0
 
     end_date = "2025-04"
     start_date =f"{ 2025 - year_period }-04"
 
     NHPI_first_search = "New Housing Price Indexes"
     NHPI_second_search = "REF_DATE"
-    temp_NHPI_array = []
-
+    NHPI_third_search = "Geo"
 
     #
-    #   Parse each line of data from the CSV reader, which will break
+    #   Parse each line of data from the CSV reader, which will break   
     #   the lines into fields based on the comma delimiter.
     #
     #   The field for each line are stored in a different row data array
@@ -152,7 +181,7 @@ def main(argv):
 
             # Goes through header row and finds the column_index_to_search by matching strings
             for column in row:
-                if first_column_index_to_search != 0 and second_column_index_to_search != 0:
+                if first_column_index_to_search != 0 and second_column_index_to_search != 0 and third_column_index_to_search != 0:
                     break
 
                 try:
@@ -170,10 +199,18 @@ def main(argv):
                     print(f"Error: string to match '{NHPI_second_search}' is not a string",
                         file=sys.stderr)
                     sys.exit(1) 
+                
+                try:
+                    if NHPI_third_search.lower() in column.lower():
+                        third_column_index_to_search = column_number
+                except ValueError as err:
+                    print(f"Error: string to match '{NHPI_third_search}' is not a string",
+                        file=sys.stderr)
+                    sys.exit(1) 
                 column_number += 1
             
             header = row
-            writer.writerow(header)
+
 
         else:
             # here we process the data rows
@@ -191,30 +228,50 @@ def main(argv):
                 #Removes case-sensitive search
                 first_row_data_to_check = row[first_column_index_to_search].lower()
             except ValueError as err:
-                print(f"Error: row data '{NHPI_first_search}' is not a string",
+                print(f"Error: row data '{row[first_column_index_to_search]}' is not a string",
                         file=sys.stderr)
                 sys.exit(1)
                 
             try:
-                second_row_data_to_check = row[second_column_index_to_search]
+                second_row_data_to_check = row[second_column_index_to_search].lower()
             except ValueError as err:
-                print(f"Error: row data '{NHPI_second_search}' is not a string",
+                print(f"Error: row data '{row[second_column_index_to_search]}' is not a string",
+                        file=sys.stderr)
+                sys.exit(1)
+            
+            try:
+                third_row_data_to_check = row[third_column_index_to_search].lower()
+            except ValueError as err:
+                print(f"Error: row data '{row[third_column_index_to_search]}' is not a string",
                         file=sys.stderr)
                 sys.exit(1)
 
             # The "in" keyword allows us to search for a substring
             # within another string
             if NHPI_method_to_match in first_row_data_to_check:
-                if start_date in second_row_data_to_check or end_date in second_row_data_to_check: 
-                    writer.writerow(row)
+                if start_date in second_row_data_to_check:
+                    try:
+                        start = int(second_row_data_to_check)
+                    except ValueError as err:
+                        print(f"Error: string to int '{second_row_data_to_check}' is not a number",
+                            file=sys.stderr)
+                        sys.exit(1)
+                elif end_date in second_row_data_to_check: 
+                    try:
+                        end = int(second_row_data_to_check)
+                    except ValueError as err:
+                        print(f"Error: string to int '{second_row_data_to_check}' is not a number",
+                            file=sys.stderr)
+                        sys.exit(1)    
+                    for geo_region in regions:
+                        if third_row_data_to_check in geo_region.name:
+                            geo_region.NHPI_percent = end - start
 
+                
     # close the input file
     infile.close()
 
 
-    #
-    #   End of Function
-    #
 
 ##
 ## Call our main function, passing the system argv as the parameter
