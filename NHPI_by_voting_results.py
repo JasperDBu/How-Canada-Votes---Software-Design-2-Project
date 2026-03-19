@@ -46,13 +46,16 @@ import csv
 class region:
     def __init__(self, name):
         self.name = name
-    total_seats = 0
-    NHPI_percent = 0
-    Lib_seats = 0
-    CPC_seats = 0
-    BQ_seats = 0
-    NDP_seats = 0
-    GP_seats = 0
+        self.total_seats = 0
+        self.NHPI_percent = 0
+        self.party_seats = {
+                "Liberal" : 0,
+                "Conservative" : 0,
+                "Bloc Q" : 0,
+                "New Democratic" : 0,
+                "Green" : 0
+            }
+    
 
 
 ##
@@ -100,9 +103,9 @@ def main(argv):
 
 
     region_dict = {
-        "ontario" : "ontario",
-        "quebec" : "quebec",
-        "british columbia" : "british columbia",
+        "ontario" : ["ontario"],
+        "quebec" : ["quebec"],
+        "british columbia" : ["british columbia"],
         "prarie region" : ["manitoba", "saskaatchewan", "alberta"],
         "atlantic region" : ["newfoundland and labrador", "prince edward island", "nova scotia", "newbrunswick"]
         }
@@ -110,8 +113,16 @@ def main(argv):
 
     NHPI_parsing( NHPI_filename, year_period, NHPI_method_to_match, regions)
 
+    vote_parsing( voting_filename, regions, region_dict )
+
     for geo_region in regions:
         print(f"Percent calulated for {geo_region.name} is {geo_region.NHPI_percent}")
+        print(f"Total Seats: {geo_region.total_seats}")
+        print(f"Liberals: {geo_region.party_seats["Liberal"]}")
+        print(f"CPC: {geo_region.party_seats["Conservative"]}")
+        print(f"BQ: {geo_region.party_seats["Bloc Q"]}")
+        print(f"NDP: {geo_region.party_seats["New Democratic"]}")
+        print(f"GP: {geo_region.party_seats["Green"]}")
 
 
 ##
@@ -248,18 +259,65 @@ def NHPI_parsing(filename, year_period, NHPI_method_to_match, regions):
                     for geo_region in regions:
                         if geo_data in geo_region.name.lower():
                             geo_region.NHPI_percent = round(end - start, 1)
+                            break
                 
     # close the input file
     infile.close()
+
+
+def find_key_by_value(dict, target):
+    target = target.lower()
+    for key, values in dict.items():
+        for items in values:
+            if items in target:
+                return key
+    return None
+
+
+def increment_if_match(geo_region, target):
+    for key in geo_region.party_seats:
+        if key.lower() in target:
+            geo_region.party_seats[key] += 1
+            geo_region.total_seats += 1
+            return
+    print(f"Error: could not find '{target}' in region.party_seats. ")
 
 
 def vote_parsing(filename, regions, region_dict):
 
     infile = open_csv_file(filename)
 
+    header = None
+    line_number = 0
+
     reader = csv.reader(infile)
 
-    infile.close
+    for row in reader:
+
+        if header is None:
+
+            header = row
+
+            PROVINCE = header_column_search_index(header, "Province")
+            ELECTED = header_column_search_index(header, "Elected Candidate")
+
+        else:
+
+            # make sure that the row is long enough
+            if len(row) != len(header):
+                print(f"Error: invalid row on line {line_number}",
+                        file=sys.stderr)
+                sys.exit(1) 
+
+            region_data = find_key_by_value(region_dict, retrieve_data(row, PROVINCE))
+
+            if region_data != None:
+                for geo_region in regions:
+                    if region_data in geo_region.name.lower():
+                        seat_data = retrieve_data(row, ELECTED)
+                        increment_if_match(geo_region, seat_data)
+
+    infile.close()
 
     
         
