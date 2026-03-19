@@ -87,9 +87,9 @@ def main(argv):
             writer.writerow(["2019", current_geo, value])
             count += 1
 
-    # ==========================================
+   
     # CLOSE FILES
-    # ==========================================
+ 
     infile.close()
     outfile.close()
 
