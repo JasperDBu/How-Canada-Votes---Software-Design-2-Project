@@ -1,0 +1,68 @@
+import sys
+import csv
+import matplotlib.pyplot as plt
+
+def main(argv):
+    
+    # CHECK INPUT
+    
+    if len(argv) < 2:
+        print("Usage: python visualize_healthcare_turnout.py <merged_csv>")
+        sys.exit(1)
+
+    input_file = argv[1]
+    output_file = "Databases/healthcare_vs_turnout.png"
+
+    regions = []
+    healthcare_access = []
+    voter_turnout = []
+
+    
+    # READ DATA
+    
+    try:
+        infile = open(input_file, newline='', encoding="utf-8")
+    except IOError:
+        print(f"Error: Could not open {input_file}")
+        sys.exit(1)
+
+    reader = csv.DictReader(infile)
+
+    for row in reader:
+        regions.append(row["GEO"])
+        healthcare_access.append(float(row["HC_ACCESS_2019"]))
+        voter_turnout.append(float(row["VOTER_TURNOUT_2019"]))
+
+    infile.close()
+
+   
+    # CREATE SCATTER PLOT
+    
+    plt.figure(figsize=(10, 6))
+    plt.scatter(healthcare_access, voter_turnout)
+
+    # Add labels (province names)
+    for i in range(len(regions)):
+        plt.text(
+            healthcare_access[i] + 0.1,
+            voter_turnout[i] + 0.1,
+            regions[i],
+            fontsize=8
+        )
+
+    plt.xlabel("Healthcare Access (%)")
+    plt.ylabel("Voter Turnout (%)")
+    plt.title("Healthcare Access vs Voter Turnout (2019)")
+    plt.grid(True)
+    plt.tight_layout()
+
+   
+    # SAVE FILE 
+    
+    plt.savefig(output_file)
+
+    print(f"Graph saved as {output_file}")
+
+
+if __name__ == "__main__":
+    main(sys.argv)
