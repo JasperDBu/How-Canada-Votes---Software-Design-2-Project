@@ -30,7 +30,7 @@ def main(argv):
 
     for row in reader:
         regions.append(row["GEO"])
-        healthcare_access.append(float(row["HC_ACCESS_2019"]))
+        healthcare_access.append(float(row["HC_ACCESS_2020"]))
         voter_turnout.append(float(row["VOTER_TURNOUT_2019"]))
 
     infile.close()

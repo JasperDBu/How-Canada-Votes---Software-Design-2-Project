@@ -89,7 +89,7 @@ def main(argv):
     # Province, Percentage of Voter Turnout 2019
     writer = csv.DictWriter(
         merged_out,
-        fieldnames=["GEO", "HC_ACCESS_2019", "VOTER_TURNOUT_2019"]
+        fieldnames=["GEO", "HC_ACCESS_2020", "VOTER_TURNOUT_2019"]
     )
     writer.writeheader()
 
@@ -108,7 +108,7 @@ def main(argv):
         if province in healthcare_data and turnout != "":
             writer.writerow({
                 "GEO": province,
-                "HC_ACCESS_2019": healthcare_data[province],
+                "HC_ACCESS_2020": healthcare_data[province],
                 "VOTER_TURNOUT_2019": turnout
             })
             count += 1
