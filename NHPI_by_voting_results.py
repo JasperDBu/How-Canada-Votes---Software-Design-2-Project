@@ -1,15 +1,18 @@
 #!/usr/bin/env python
 
 '''
-extract_column_match_case_insensitive
+NHPI_by_voting_results.py
   Author(s): Jasper Bungay (1384647), Lincoln Fiser (1385739), Harveen Harveen (1337280)
 
-  Project: Data Extractor Script (Iteration 0)
-  Date of Last Update: Feb 23, 2026.
+  Project: Team Project
+  Date of Last Update: Mar 22, 2026.
 
   Functional Summary
-        Extract rows from a .CSV file based on matching a case-insensitive string
-        within a given column identified by index
+        This code parses two data files into usable data to answer if housing price affects the voting results of the 
+        45th General Election. We use the NHPI data table and the voting results by electorial districts to complete this question.
+        The data will be parsed into region obects that will hold onto some information that we will be using. For instance, total seats each region has,
+        how many seats each party recieved. Finally, the code creates a grouped bar chart to visualize our data and will help us confirm
+        any patterns showing.
 
      Commandline Parameters: 3
         argv[1] = string column identity
