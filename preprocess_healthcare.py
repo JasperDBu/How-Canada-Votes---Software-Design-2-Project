@@ -11,7 +11,7 @@ preprocess_healthcare.py
         that won't be valuable to the program, and filtering out irrelavent values. 
 
      Commandline Parameters: 4
-        argv[1] = NHPI method column identity
+        argv[1] = 
 
      References:
         * Statistics Canada - Access to A Regular Healthcare Provider.
