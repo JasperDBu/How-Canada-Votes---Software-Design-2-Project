@@ -45,6 +45,11 @@ import sys
 # the fields on each line in turn
 import csv
 
+import matplotlib.pyplot as plt
+
+import pandas as pd
+
+
 # Class definition for regions, this is where all the collected values will be kept. 
 class region:
     def __init__(self, name):
@@ -118,7 +123,9 @@ def main(argv):
 
     vote_parsing( voting_filename, regions, region_dict )
 
+
     for geo_region in regions:
+        number_to_percent(geo_region)
         print(f"Percent calulated for {geo_region.name} is {geo_region.NHPI_percent}")
         print(f"Total Seats: {geo_region.total_seats}")
         print(f"Liberals: {geo_region.party_seats["Liberal"]}")
@@ -127,72 +134,7 @@ def main(argv):
         print(f"NDP: {geo_region.party_seats["New Democratic"]}")
         print(f"GP: {geo_region.party_seats["Green"]}")
 
-
-##
-##  open_csv_file:
-##  This function takes a file name and opens a csv file and returns the opened file. This function also has error checks.
-##
-def open_csv_file(filename):
-    #
-    # Open the input file.  The encoding argument
-    # indicates that we want to handle the BOM (if present)
-    # by simply ignoring it.
-    #
-    # The "newline=''" argument ensures correct handling of
-    # the input data if the values within quoted strings of
-    # the CSV format themselves contain newlines.  Please
-    # see footnote 1 on the Python.org `csv` library documentation:
-    #    https://docs.python.org/3/library/csv.html#id4
-    #
-    try:
-        infile = open(filename, newline='', encoding="utf-8-sig")
-
-    except IOError as err:
-        # Here we are using the python format() function.
-        # The arguments passed to format() are placed into
-        # the string it is called on in the order in which
-        # they are given.
-        print("Unable to open csv file '{}' : {}".format(
-                filename, err), file=sys.stderr)
-        sys.exit(1)
-
-    return infile
-
-
-##
-##  header_column_search_index: 
-##  This function takes a header row and the target field. It finds the column index of the target field using 
-##  the header row to match a case-insensitive check   
-##
-def header_column_search_index( header, target):
-
-    column_number = 0
-    target = target.lower()
-    
-    for column in header:
-        try:
-            if target in column.lower():
-                return column_number
-            else:
-                column_number += 1
-        except ValueError as err:
-            print(f"Error: string to match '{column}' is not a string : {err}",
-                file=sys.stderr)
-            sys.exit(1)
-    
-    print(f"Error: could not find '{target}' column in header row", file=sys.stderr)
-    sys.exit(1)
-    
-        
-
-def retrieve_data(row, index):
-    try:
-        data = row[index].lower()
-    except ValueError as err:
-        print(f"Error: row data '{row[index]}' is not a string : {err}",
-                file=sys.stderr)
-        sys.exit(1)
-    return data
+    visualization(regions, year_period, NHPI_method_to_match)
 
 
 def NHPI_parsing(filename, year_period, NHPI_method_to_match, regions):
@@ -268,24 +210,6 @@ def NHPI_parsing(filename, year_period, NHPI_method_to_match, regions):
     infile.close()
 
 
-def find_key_by_value(dict, target):
-    target = target.lower()
-    for key, values in dict.items():
-        for items in values:
-            if items in target:
-                return key
-    return None
-
-
-def increment_if_match(geo_region, target):
-    for key in geo_region.party_seats:
-        if key.lower() in target:
-            geo_region.party_seats[key] += 1
-            geo_region.total_seats += 1
-            return
-    print(f"Error: could not find '{target}' in region.party_seats. ")
-
-
 def vote_parsing(filename, regions, region_dict):
 
     infile = open_csv_file(filename)
@@ -321,6 +245,151 @@ def vote_parsing(filename, regions, region_dict):
                         increment_if_match(geo_region, seat_data)
 
     infile.close()
+
+
+def visualization(regions, year_period, NHPI_method):
+
+    df = build_dataframe(regions)
+
+    plot_cols = ["NHPI", "LIB", "CPC", "BQ", "NDP", "GP"]
+
+    df.plot(x="Region",
+            y=plot_cols,
+            kind="bar",
+            stacked=False,
+            title=f'Regional Housing Price Change, {year_period}, {NHPI_method}, and Party Seat Percentage in the 45th Election'
+            )
+    
+    plt.ylabel("Percentage (%)")
+
+    plt.tight_layout()
+    plt.show()
+
+
+##
+##  open_csv_file:
+##  This function takes a file name and opens a csv file and returns the opened file. This function also has error checks.
+##
+def open_csv_file(filename):
+    #
+    # Open the input file.  The encoding argument
+    # indicates that we want to handle the BOM (if present)
+    # by simply ignoring it.
+    #
+    # The "newline=''" argument ensures correct handling of
+    # the input data if the values within quoted strings of
+    # the CSV format themselves contain newlines.  Please
+    # see footnote 1 on the Python.org `csv` library documentation:
+    #    https://docs.python.org/3/library/csv.html#id4
+    #
+    try:
+        infile = open(filename, newline='', encoding="utf-8-sig")
+
+    except IOError as err:
+        # Here we are using the python format() function.
+        # The arguments passed to format() are placed into
+        # the string it is called on in the order in which
+        # they are given.
+        print("Unable to open csv file '{}' : {}".format(
+                filename, err), file=sys.stderr)
+        sys.exit(1)
+
+    return infile
+
+
+##
+##  header_column_search_index: 
+##  This function takes a header row and the target field. It finds the column index of the target field using 
+##  the header row to match a case-insensitive check   
+##
+def header_column_search_index( header, target):
+
+    column_number = 0
+    target = target.lower()
+    
+    for column in header:
+        try:
+            if target in column.lower():
+                return column_number
+            else:
+                column_number += 1
+        except ValueError as err:
+            print(f"Error: string to match '{column}' is not a string : {err}",
+                file=sys.stderr)
+            sys.exit(1)
+    
+    print(f"Error: could not find '{target}' column in header row", file=sys.stderr)
+    sys.exit(1)
+    
+        
+
+def retrieve_data(row, index):
+    try:
+        data = row[index].lower()
+    except ValueError as err:
+        print(f"Error: row data '{row[index]}' is not a string : {err}",
+                file=sys.stderr)
+        sys.exit(1)
+    return data
+
+
+
+
+def find_key_by_value(dict, target):
+    target = target.lower()
+    for key, values in dict.items():
+        for items in values:
+            if items in target:
+                return key
+    return None
+
+
+def increment_if_match(geo_region, target):
+    for key in geo_region.party_seats:
+        if key.lower() in target:
+            geo_region.party_seats[key] += 1
+            geo_region.total_seats += 1
+            return
+    print(f"Error: could not find '{target}' in region.party_seats. ")
+
+
+def number_to_percent(geo_region):
+    for key in geo_region.party_seats:
+        geo_region.party_seats[key] = round(( geo_region.party_seats[key] / geo_region.total_seats ) * 100, 1) 
+
+    #  class region:
+        # def __init__(self, name):
+        #     self.name = name
+        #     self.total_seats = 0
+        #     self.NHPI_percent = 0
+        #     self.party_seats = {
+        #             "Liberal" : 0,
+        #             "Conservative" : 0,
+        #             "Bloc Q" : 0,
+        #             "New Democratic" : 0,
+        #             "Green" : 0
+        #         }
+
+def build_dataframe(regions):
+    rows = []
+    for r in regions:
+        row = {
+            "Region": r.name,
+            "NHPI": r.NHPI_percent,
+            "LIB": r.party_seats["Liberal"],
+            "CPC": r.party_seats["Conservative"],
+            "BQ": r.party_seats["Bloc Q"],
+            "NDP": r.party_seats["New Democratic"],
+            "GP": r.party_seats["Green"]
+        }
+        rows.append(row)
+
+    return pd.DataFrame(rows, columns=['Region', 'NHPI', 'LIB', 'CPC', 'BQ', 'NDP', 'GP'])
+
+
+
+
+
 
     
         
