@@ -10,8 +10,9 @@ visualize_healthcare_turnout.py
         onto a visual graph using PYPLOT from matplot lib to generate a scatter plot so data can
         be compared and contrasted a solution can be reached to see effects on each province. 
 
-     Commandline Parameters: 4
-        argv[1] = 
+     Commandline Parameters: 2
+        argv[1] = visualize_healthcare_turnout.py 
+        argv[2]: Databases/healthcare_turnout_merged.csv
 
      References:
         * Statistics Canada - Access to A Regular Healthcare Provider.
@@ -22,7 +23,6 @@ visualize_healthcare_turnout.py
         * Election
 
 '''
-
 
 
 import sys
@@ -79,7 +79,7 @@ def main(argv):
 
     plt.xlabel("Healthcare Access (%)")
     plt.ylabel("Voter Turnout (%)")
-    plt.title("Healthcare Access vs Voter Turnout (2019)")
+    plt.title("Healthcare Access vs Voter Turnout (2019-2020)")
     plt.grid(True)
     plt.tight_layout()
 

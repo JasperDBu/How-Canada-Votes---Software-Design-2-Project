@@ -10,8 +10,9 @@ preprocess_healthcare.py
         data from the year of choice (2019). It handles inconsistent formatting by eliminating information 
         that won't be valuable to the program, and filtering out irrelavent values. 
 
-     Commandline Parameters: 4
-        argv[1] = 
+     Commandline Parameters: 2
+        argv[1] = preprocess_healthcare.py
+        argv[2] = <input_healthcare_csv>
 
      References:
         * Statistics Canada - Access to A Regular Healthcare Provider.
@@ -20,7 +21,6 @@ preprocess_healthcare.py
            20200101
 
 '''
-
 import sys
 import csv
 
@@ -35,7 +35,7 @@ def main(argv):
         sys.exit(1)
 
     healthcare_filename = argv[1]
-    output_filename = "Databases/healthcare_2019_cleaned.csv"
+    output_filename = "Databases/healthcare_2020_cleaned.csv"
 
     
     # OPEN INPUT FILE
@@ -107,9 +107,9 @@ def main(argv):
             # Update current province when a new one appears
             current_geo = first_col
 
-        # Keep only 2019 rows with a province and a value
-        if current_geo != "" and ref_date == "2019" and value != "":
-            writer.writerow(["2019", current_geo, value])
+        # Keep only 2020 rows with a province and a value
+        if current_geo != "" and ref_date == "2020" and value != "":
+            writer.writerow(["2020", current_geo, value])
             count += 1
 
    

@@ -11,8 +11,10 @@ merge_healthcare_turnout.py
         based on this new merged file it will read from. The final output generates a combined table 
         containing province name, healthcare access value (%), and 2019 voter turnout (%).
 
-     Commandline Parameters: 4
-        argv[1] = 
+     Commandline Parameters: 3
+        argv[1] = merge_healthcare_turnout.py 
+        argv[2] = Databases/All_Provinces_Healthcare.csv 
+        argv[3] = "Databases/Election turnover 2019-2021.csv"
 
      References:
         * Statistics Canada – Access to a healthcare provider (processed).
@@ -20,7 +22,6 @@ merge_healthcare_turnout.py
         * Elections Canada – Voting results by electoral district for the 43rd General Election
               https://www.elections.ca/content.aspx?section=res&dir=rep/off/45gedata&document=summary&lang=e
 '''
-
 
 
 import sys
