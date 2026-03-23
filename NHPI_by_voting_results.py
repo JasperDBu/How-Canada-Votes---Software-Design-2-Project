@@ -234,19 +234,21 @@ def NHPI_parsing(filename, year_period, NHPI_method_to_match, regions):
 ##   This function parses the data from the New Housing Price Index data table to the array of region objects.
 ## Parameter: 
 ##   filename: [string] this is the name of the NHPI data table
-##   year_period: [int] this is the specified amount of years the user want to calculate
 ##   NHPI_method_to_match: [string] this is the specified NHPI method the user would like to filter out and calculate
 ##   regions: [array of regions (objects)] this is the array of region objects where we will keep the data parsed.
 ## Output: 
-##   The data parsed will be kept inside the region objects. This function will calculate the NHPI value change from the start date and
-##   end date of the year period.
+##   The data parsed will be kept inside the region objects. This function will count amount of seats given to each party in each region
+
 def vote_parsing(filename, regions, region_dict):
 
+    # This will open the file
     infile = open_csv_file(filename)
 
+    # this is to keep track of the header row
     header = None
     line_number = 0
 
+    # uses csv.reader to split the csv data into an array
     reader = csv.reader(infile)
 
     for row in reader:
@@ -255,6 +257,7 @@ def vote_parsing(filename, regions, region_dict):
 
             header = row
 
+            # Finds the index of the given column fields
             PROVINCE = header_column_search_index(header, "Province")
             ELECTED = header_column_search_index(header, "Elected Candidate")
 
@@ -266,23 +269,37 @@ def vote_parsing(filename, regions, region_dict):
                         file=sys.stderr)
                 sys.exit(1) 
 
+            # This matches the province data to a region
             region_data = find_key_by_value(region_dict, retrieve_data(row, PROVINCE))
 
+            # if the province was matched it will increment the total seats given in the region and increment the elected party
             if region_data != None:
                 for geo_region in regions:
                     if region_data in geo_region.name.lower():
                         seat_data = retrieve_data(row, ELECTED)
                         increment_if_match(geo_region, seat_data)
 
+    # This closes the file
     infile.close()
 
 
+## visualization:
+##   This function will create a grouped bar chart to visualize the collected data
+## Parameters:
+##   regions: [array of regions(objects)] This is an array of region objects
+##   year_period: [int] this is the specified amount of years the user want to calculate
+##   NHPI_method: [string] this is the specified NHPI method the user would like to filter out and calculate
+## Output:
+##   This will create a new png file of the created graph. This file is called "NHPI_by_voting_results_visualization.png"
 def visualization(regions, year_period, NHPI_method):
 
+    # This function build the data frame that we will be using to plot our data
     df = build_dataframe(regions)
 
+    # This names the columns of the group bar
     plot_cols = ["NHPI", "LIB", "CPC", "BQ", "NDP", "GP"]
 
+    # This chooses the colours for the bars
     colors = {
         "NHPI": "brown",
         "LIB": "red",
@@ -292,8 +309,10 @@ def visualization(regions, year_period, NHPI_method):
         "GP": "green"
     }
 
+    #This Creates a blank canvas for us to work in
     plt.figure(figsize=(12, 6))
 
+    # This creates the amount of sections we have for regions in the x axis
     x = np.arange(len(df["Region"]))
     width = 0.12
 
@@ -325,7 +344,7 @@ def visualization(regions, year_period, NHPI_method):
         rotation=0
     )
 
-    # Labels and title
+    # This creates the labels and title
     plt.ylabel("Percentage (%)")
     plt.title(
         f"Regional Housing Price Change, {year_period} year period, {NHPI_method} pricing, and Party Seat Percentage in the 45th Election"
@@ -333,18 +352,19 @@ def visualization(regions, year_period, NHPI_method):
     plt.legend()
     plt.tight_layout()
 
-    # Save PNG
+    # This saves the graph as a  PNG
     plt.savefig("NHPI_by_voting_results_visualization.png", dpi=300)
     plt.close()
 
 
 
 ##
-##  open_csv_file:
-##  This function takes a file name and opens a csv file and returns the opened file. This function also has error checks.
-##
+## open_csv_file:
+##    This function takes a file name and opens a csv file and returns the opened file. This function also has error checks.
+## Parameter:
+##   filename: [string] name of a file
 def open_csv_file(filename):
-    #
+    
     # Open the input file.  The encoding argument
     # indicates that we want to handle the BOM (if present)
     # by simply ignoring it.
@@ -371,13 +391,19 @@ def open_csv_file(filename):
 
 
 ##
-##  header_column_search_index: 
-##  This function takes a header row and the target field. It finds the column index of the target field using 
-##  the header row to match a case-insensitive check   
-##
+## header_column_search_index: 
+##   This function takes a header row and the target field. It finds the column index of the target field using 
+##   the header row to match a case-insensitive check
+## Parameter:
+##   header: [row from csv.reader] this is usually the header row
+##   target: [string] this is the name of the target column field
+## output:
+##   This function outputs the index number of the target column field
 def header_column_search_index( header, target):
 
     column_number = 0
+
+    # This is used for case-insensitive checks
     target = target.lower()
     
     for column in header:
@@ -394,9 +420,17 @@ def header_column_search_index( header, target):
     print(f"Error: could not find '{target}' column in header row", file=sys.stderr)
     sys.exit(1)
     
-        
+
+## retrieve_data:
+##   This function gets the data from the target column field in the given row.
+## Parameter:
+##   row: [row from csv.reader] 
+##   index: [int] this is the index of the target column field
+## Output:
+##   This returns the data retrieved from the target column field
 def retrieve_data(row, index):
     try:
+        # This checks if the data is valid.
         data = row[index].lower()
     except ValueError as err:
         print(f"Error: row data '{row[index]}' is not a string : {err}",
@@ -405,8 +439,17 @@ def retrieve_data(row, index):
     return data
 
 
+## find_key_by_value:
+##   This function searches through the values of the dictionary. If the target matches any values it will give back the key that contains the value.
+## parameters:
+##   dict: [dictionary] this is usually the dictonary of regions to provinces
+##   target: [string] This is the target value that we want to match with the dictionary
+## Output:
+##   This function outputs the key where the target matches the value. If there is no match it will return None
 def find_key_by_value(dict, target):
+    # This turns the match to case-insensitive
     target = target.lower()
+    # checks through the values of the keys 
     for key, values in dict.items():
         for items in values:
             if items in target:
@@ -414,6 +457,13 @@ def find_key_by_value(dict, target):
     return None
 
 
+## increment_if_match:
+##   This function will increment the value of a key when the target matches the key.
+## parameters:
+##   geo_region: [object] this is a region object
+##   target: [string] this is the target used to match
+## output:
+##   This code will output nothing but it will increment the value of a key.
 def increment_if_match(geo_region, target):
     for key in geo_region.party_seats:
         if key.lower() in target:
@@ -424,11 +474,23 @@ def increment_if_match(geo_region, target):
     sys.exit(1)
 
 
+## number_to_percent:
+##   This function will turn the party seat count to a percent using the total seats in the region
+## parameters:
+##   geo_region: [object] this is a region object
+## Output:
+##   this code will output nothing but it will change a value from a number to a percent.
 def number_to_percent(geo_region):
     for key in geo_region.party_seats:
         geo_region.party_seats[key] = round(( geo_region.party_seats[key] / geo_region.total_seats ) * 100, 1) 
 
 
+## build_dataframe:
+##   This code will turn the given array into a data frame that will be used for the visualization
+## parameters:
+##   regions: [array of objects] this is an array of region objects.
+## Output:
+##   This function will return the new dataframe
 def build_dataframe(regions):
     rows = []
     for r in regions:
