@@ -147,9 +147,16 @@ def main(argv):
     visualization(regions, year_period, NHPI_method_to_match)
 
 
-##
 ## NHPI_parsing: 
-## This function parses the data from the New Housing Price Index data table 
+##   This function parses the data from the New Housing Price Index data table to the array of region objects.
+## Parameter: 
+##   filename: [string] this is the name of the NHPI data table
+##   year_period: [int] this is the specified amount of years the user want to calculate
+##   NHPI_method_to_match: [string] this is the specified NHPI method the user would like to filter out and calculate
+##   regions: [array of regions (objects)] this is the array of region objects where we will keep the data parsed.
+## Output: 
+##   The data parsed will be kept inside the region objects. This function will calculate the NHPI value change from the start date and
+##   end date of the year period.
 def NHPI_parsing(filename, year_period, NHPI_method_to_match, regions):
 
     infile = open_csv_file(filename)
@@ -223,6 +230,16 @@ def NHPI_parsing(filename, year_period, NHPI_method_to_match, regions):
     infile.close()
 
 
+## vote_parsing: 
+##   This function parses the data from the New Housing Price Index data table to the array of region objects.
+## Parameter: 
+##   filename: [string] this is the name of the NHPI data table
+##   year_period: [int] this is the specified amount of years the user want to calculate
+##   NHPI_method_to_match: [string] this is the specified NHPI method the user would like to filter out and calculate
+##   regions: [array of regions (objects)] this is the array of region objects where we will keep the data parsed.
+## Output: 
+##   The data parsed will be kept inside the region objects. This function will calculate the NHPI value change from the start date and
+##   end date of the year period.
 def vote_parsing(filename, regions, region_dict):
 
     infile = open_csv_file(filename)
@@ -378,7 +395,6 @@ def header_column_search_index( header, target):
     sys.exit(1)
     
         
-
 def retrieve_data(row, index):
     try:
         data = row[index].lower()
@@ -387,8 +403,6 @@ def retrieve_data(row, index):
                 file=sys.stderr)
         sys.exit(1)
     return data
-
-
 
 
 def find_key_by_value(dict, target):
@@ -407,24 +421,13 @@ def increment_if_match(geo_region, target):
             geo_region.total_seats += 1
             return
     print(f"Error: could not find '{target}' in region.party_seats. ")
+    sys.exit(1)
 
 
 def number_to_percent(geo_region):
     for key in geo_region.party_seats:
         geo_region.party_seats[key] = round(( geo_region.party_seats[key] / geo_region.total_seats ) * 100, 1) 
 
-    #  class region:
-        # def __init__(self, name):
-        #     self.name = name
-        #     self.total_seats = 0
-        #     self.NHPI_percent = 0
-        #     self.party_seats = {
-        #             "Liberal" : 0,
-        #             "Conservative" : 0,
-        #             "Bloc Q" : 0,
-        #             "New Democratic" : 0,
-        #             "Green" : 0
-        #         }
 
 def build_dataframe(regions):
     rows = []
@@ -441,15 +444,6 @@ def build_dataframe(regions):
         rows.append(row)
 
     return pd.DataFrame(rows, columns=['Region', 'NHPI', 'LIB', 'CPC', 'BQ', 'NDP', 'GP'])
-
-
-
-
-
-
-    
-        
-    
 
 
 ##
