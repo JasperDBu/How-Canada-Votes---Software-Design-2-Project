@@ -14,10 +14,11 @@ NHPI_by_voting_results.py
         how many seats each party recieved. Finally, the code creates a grouped bar chart to visualize our data and will help us confirm
         any patterns showing.
 
-     Commandline Parameters: 3
-        argv[1] = string column identity
-        argv[2] = string to match
-        argv[3] = name of the input csv file
+     Commandline Parameters: 4
+        argv[1] = NHPI method column identity
+        argv[2] = integer year period
+        argv[3] = name of the NHPI input csv file
+        argv[4] = name of the Voting input csv file
 
      References:
         * Statistics Canada (2025): "Job vacancies, payroll
@@ -48,6 +49,8 @@ import csv
 import matplotlib.pyplot as plt
 
 import pandas as pd
+
+import numpy as np
 
 
 # Class definition for regions, this is where all the collected values will be kept. 
@@ -127,12 +130,11 @@ def main(argv):
     for geo_region in regions:
         number_to_percent(geo_region)
         print(f"Percent calulated for {geo_region.name} is {geo_region.NHPI_percent}")
-        print(f"Total Seats: {geo_region.total_seats}")
-        print(f"Liberals: {geo_region.party_seats["Liberal"]}")
-        print(f"CPC: {geo_region.party_seats["Conservative"]}")
-        print(f"BQ: {geo_region.party_seats["Bloc Q"]}")
-        print(f"NDP: {geo_region.party_seats["New Democratic"]}")
-        print(f"GP: {geo_region.party_seats["Green"]}")
+        print(f"Liberals: {geo_region.party_seats["Liberal"]}%")
+        print(f"CPC: {geo_region.party_seats["Conservative"]}%")
+        print(f"BQ: {geo_region.party_seats["Bloc Q"]}%")
+        print(f"NDP: {geo_region.party_seats["New Democratic"]}%")
+        print(f"GP: {geo_region.party_seats["Green"]}%")
 
     visualization(regions, year_period, NHPI_method_to_match)
 
@@ -253,17 +255,60 @@ def visualization(regions, year_period, NHPI_method):
 
     plot_cols = ["NHPI", "LIB", "CPC", "BQ", "NDP", "GP"]
 
-    df.plot(x="Region",
-            y=plot_cols,
-            kind="bar",
-            stacked=False,
-            title=f'Regional Housing Price Change, {year_period}, {NHPI_method}, and Party Seat Percentage in the 45th Election'
-            )
-    
-    plt.ylabel("Percentage (%)")
+    colors = {
+        "NHPI": "brown",
+        "LIB": "red",
+        "CPC": "deepskyblue",
+        "BQ": "blue",
+        "NDP": "orangered",
+        "GP": "green"
+    }
 
+    plt.figure(figsize=(12, 6))
+
+    x = np.arange(len(df["Region"]))
+    width = 0.12
+
+    # Draw each bar group
+    for i, col in enumerate(plot_cols):
+        plt.bar(
+            x + i * width,
+            df[col],
+            width=width,
+            label=col,
+            color=colors[col]
+        )
+
+    # Horizontal zero line
+    plt.axhline(0, color="black", linewidth=1)
+
+    # Light gridlines
+    plt.grid(axis="y", linestyle="--", linewidth=0.5, alpha=0.7)
+
+    # Y-axis ticks every 5
+    ymin = df[plot_cols].min().min()
+    ymax = df[plot_cols].max().max()
+    plt.yticks(np.arange(np.floor(ymin/5)*5, np.ceil(ymax/5)*5 + 1, 5))
+
+    # X axis labels centered under groups
+    plt.xticks(
+        x + width * (len(plot_cols)-1) / 2,
+        df["Region"],
+        rotation=0
+    )
+
+    # Labels and title
+    plt.ylabel("Percentage (%)")
+    plt.title(
+        f"Regional Housing Price Change, {year_period} year period, {NHPI_method} pricing, and Party Seat Percentage in the 45th Election"
+        )
+    plt.legend()
     plt.tight_layout()
-    plt.show()
+
+    # Save PNG
+    plt.savefig("NHPI_by_voting_results_visualization.png", dpi=300)
+    plt.close()
+
 
 
 ##
