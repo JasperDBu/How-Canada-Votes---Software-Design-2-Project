@@ -1,32 +1,38 @@
 #!/usr/bin/env python
 
-'''
-NHPI_by_voting_results.py
-  Author(s): Jasper Bungay (1384647), Lincoln Fiser (1385739), Harveen Harveen (1337280)
 
-  Project: Team Project
-  Date of Last Update: Mar 22, 2026.
+#   NHPI_by_voting_results.py
+#   Author(s): Jasper Bungay (1384647), Lincoln Fiser (1385739), Harveen Harveen (1337280)
 
-  Functional Summary
-        This code parses two data files into usable data to answer if housing price affects the voting results of the 
-        45th General Election. We use the NHPI data table and the voting results by electorial districts to complete this question.
-        The data will be parsed into region obects that will hold onto some information that we will be using. For instance, total seats each region has,
-        how many seats each party recieved. Finally, the code creates a grouped bar chart to visualize our data and will help us confirm
-        any patterns showing.
+#   Project: Team Project
+#   Date of Last Update: Mar 22, 2026.
 
-     Commandline Parameters: 4
-        argv[1] = NHPI method column identity
-        argv[2] = integer year period
-        argv[3] = name of the NHPI input csv file
-        argv[4] = name of the Voting input csv file
+#   Functional Summary
+#         This code parses two data files into usable data to answer if housing price affects the voting results of the 
+#         45th General Election. We use the NHPI data table and the voting results by electorial districts to complete this question.
+#         The data will be parsed into region obects that will hold onto some information that we will be using. For instance, total seats each region has,
+#         how many seats each party recieved. Finally, the code creates a grouped bar chart to visualize our data and will help us confirm
+#         any patterns showing.
 
-     References:
-        * Statistics Canada – New Housing Price Index, monthly, by geographical region
-          https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810020501&pickMembers%5B0%5D=1.1&cubeTimeFrame.startMonth=01&cubeTimeFrame.startYear=2025&cubeTimeFrame.endMonth=01&cubeTimeFrame.endYear=2026&referencePeriods=20250101%2C20260101
+#      Commandline Parameters: 4
+#         argv[1] = NHPI method column identity
+#         argv[2] = integer year period
+#         argv[3] = name of the voting input csv file
+#         argv[4] = name of the NHPI input csv file
 
-        * Elections Canada – Voting results by electoral district for the 45th General Election
-          https://www.elections.ca/content.aspx?section=res&dir=rep/off/45gedata&document=summary&lang=e
-'''
+#      Commandline Example: 
+#         Windows:
+#             python .\NHPI_by_voting_results.py house 1 .\Databases\45th_election_voting_results.csv .\Databases\New_Housing_Price_Index.csv
+#         MacOS:
+#             python3 NHPI_by_voting_results.py house 1 Databases/45th_election_voting_results.csv Databases/New_Housing_Price_Index.csv
+
+#      References:
+#         * Statistics Canada – New Housing Price Index, monthly, by geographical region
+#           https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810020501&pickMembers%5B0%5D=1.1&cubeTimeFrame.startMonth=01&cubeTimeFrame.startYear=2025&cubeTimeFrame.endMonth=01&cubeTimeFrame.endYear=2026&referencePeriods=20250101%2C20260101
+
+#         * Elections Canada – Voting results by electoral district for the 45th General Election
+#           https://www.elections.ca/content.aspx?section=res&dir=rep/off/45gedata&document=summary&lang=e
+
 
 
 #
@@ -134,6 +140,7 @@ def main(argv):
     # This loops through the array of region objects and transforms the data and prints out the contents of the data.
     for geo_region in regions:
         # This function turns the count of seats distributed to the parties into a percent based on the amount of seats distributed to each party.
+        number_to_percent(geo_region)
 
         # prints out the contents of the region objects.
         print(f"Percent calulated for {geo_region.name} is {geo_region.NHPI_percent}")
@@ -466,7 +473,7 @@ def find_key_by_value(dict, target):
 ##   This code will output nothing but it will increment the value of a key.
 def increment_if_match(geo_region, target):
     for key in geo_region.party_seats:
-        if key.lower() in target:
+        if key.lower() in target.lower():
             geo_region.party_seats[key] += 1
             geo_region.total_seats += 1
             return
@@ -481,6 +488,7 @@ def increment_if_match(geo_region, target):
 ## Output:
 ##   this code will output nothing but it will change a value from a number to a percent.
 def number_to_percent(geo_region):
+    total = geo_region.total_seats
     for key in geo_region.party_seats:
         geo_region.party_seats[key] = round(( geo_region.party_seats[key] / geo_region.total_seats ) * 100, 1) 
 
