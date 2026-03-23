@@ -1,3 +1,26 @@
+'''
+preprocess_healthcare.py
+  Author(s): Jasper Bungay (1384647), Lincoln Fiser (1385739), Harveen Harveen (1337280)
+
+  Project: Team Project
+  Date of Last Update: Mar 23, 2026.
+
+  Functional Summary
+        This code preprocesses a Statistics Canda healthcare CSV file by cleaning and extracting specific 
+        data from the year of choice (2019). It handles inconsistent formatting by eliminating information 
+        that won't be valuable to the program, and filtering out irrelavent values. 
+
+     Commandline Parameters: 4
+        argv[1] = NHPI method column identity
+
+     References:
+        * Statistics Canada - Access to A Regular Healthcare Provider.
+           https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1310009616&pickMembers%5B0%5D=1.7&pickMembe
+           rs%5B1%5D=3.1&cubeTimeFrame.startYear=2019&cubeTimeFrame.endYear=2020&referencePeriods=20190101%2C
+           20200101
+
+'''
+
 import sys
 import csv
 
