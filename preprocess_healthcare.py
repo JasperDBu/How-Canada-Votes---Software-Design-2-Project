@@ -29,6 +29,7 @@ def main(argv):
     # CHECK COMMAND LINE ARGUMENTS
    
     # The program expects the healthcare CSV file
+    # Validates Input, Ensures the user provided a filename when running the code
     if len(argv) < 2:
         print("Usage: python preprocess_healthcare.py <input_healthcare_csv>")
         sys.exit(1)
@@ -54,6 +55,7 @@ def main(argv):
    
     # The cleaned file will only keep the fields
     # needed for the merge step
+    # Creates a new file to save only the data we actually need
     try:
         outfile = open(output_filename, "w", newline='', encoding="utf-8")
     except IOError:
@@ -62,7 +64,7 @@ def main(argv):
         sys.exit(1)
 
     writer = csv.writer(outfile)
-    writer.writerow(["REF_DATE", "GEO", "VALUE"])
+    writer.writerow(["REF_DATE", "GEO", "VALUE"]) # Define new, simple header
 
     count = 0              # number of rows written
     current_geo = ""       # keeps track of the current province
