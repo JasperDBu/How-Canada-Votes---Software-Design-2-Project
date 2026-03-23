@@ -1,3 +1,30 @@
+'''
+visualize_healthcare_turnout.py
+  Author(s): Jasper Bungay (1384647), Lincoln Fiser (1385739), Harveen Harveen (1337280)
+
+  Project: Team Project
+  Date of Last Update: Mar 23, 2026.
+
+  Functional Summary
+        The purpose of this code is to take the merged data that has been gathered, and input it
+        onto a visual graph using PYPLOT from matplot lib to generate a scatter plot so data can
+        be compared and contrasted a solution can be reached to see effects on each province. 
+
+     Commandline Parameters: 4
+        argv[1] = 
+
+     References:
+        * Statistics Canada - Access to A Regular Healthcare Provider.
+           https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1310009616&pickMembers%5B0%5D=1.7&pickMembe
+           rs%5B1%5D=3.1&cubeTimeFrame.startYear=2019&cubeTimeFrame.endYear=2020&referencePeriods=20190101%2C
+           20200101
+
+        * Election
+
+'''
+
+
+
 import sys
 import csv
 import matplotlib.pyplot as plt
