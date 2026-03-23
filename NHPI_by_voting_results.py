@@ -21,15 +21,11 @@ NHPI_by_voting_results.py
         argv[4] = name of the Voting input csv file
 
      References:
-        * Statistics Canada (2025): "Job vacancies, payroll
-            employees, job vacancy rate, and average offered
-            hourly wage by industry sub-sector, quarterly,
-            unadjusted for seasonality", Table: 14-10-0442-01,
-            https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410044201
-        * Government of Canada (2025): "44th General Election:
-            Official Voting Results", Record ID:
-            065439a9-c194-4259-9c95-245a852be4a1
-            https://open.canada.ca/data/en/dataset/065439a9-c194-4259-9c95-245a852be4a1
+        * Statistics Canada – New Housing Price Index, monthly, by geographical region
+          https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810020501&pickMembers%5B0%5D=1.1&cubeTimeFrame.startMonth=01&cubeTimeFrame.startYear=2025&cubeTimeFrame.endMonth=01&cubeTimeFrame.endYear=2026&referencePeriods=20250101%2C20260101
+
+        * Elections Canada – Voting results by electoral district for the 45th General Election
+          https://www.elections.ca/content.aspx?section=res&dir=rep/off/45gedata&document=summary&lang=e
 '''
 
 
@@ -46,10 +42,14 @@ import sys
 # the fields on each line in turn
 import csv
 
+# The 'plt' module gives us access to tools that allow us to create graphs
 import matplotlib.pyplot as plt
 
+# The 'pd' module allows us to use data that is formatted in a table manner. This is usefull for
+# creating a visualization.
 import pandas as pd
 
+# The 'np' module allows us work with matrices or in other words, data that have been formatted with pd.
 import numpy as np
 
 
@@ -73,16 +73,17 @@ class region:
 ## Mainline function
 ##
 def main(argv):
+  
     #
     #   Check that we have been given the right number of parameters,
     #   and store the single command line argument in a variable with
-    #   a better name
+    #   a better name.
     #
     if len(argv) != 5:
         print("Usage: NHPI_by_voting_results.py <Housing price index method to filter> <Year period to filter> <input csv file name for voting data set> <input csv file name for housing price index data set>")
         sys.exit(1)
 
-    # Puts all strings to search to lower for case-insensitive search
+    # Puts all strings to search to lower for case-insensitive search.
     try:
         NHPI_method_to_match = argv[1].lower()
     except ValueError as err:
@@ -90,6 +91,7 @@ def main(argv):
                 file=sys.stderr)
         sys.exit(1)
 
+    # takes year period argument and checks if it is a valid input.
     try:
         year_period = int(argv[2])
         if year_period > 3:
@@ -99,11 +101,12 @@ def main(argv):
                 file=sys.stderr)
         sys.exit(1)    
 
-    
+
+    # creating variables for the file names.
     voting_filename = argv[3]
     NHPI_filename = argv [4]
 
-
+    # creating an array of regions to keep all 5 different regions in the data base.
     regions = [
         region("Ontario"),
         region("Quebec"),
@@ -112,7 +115,7 @@ def main(argv):
         region("Atlantic Region")
         ]
 
-
+    # creating a dictionary that allows us to key provinces to their geographical region.
     region_dict = {
         "ontario" : ["ontario"],
         "quebec" : ["quebec"],
@@ -122,13 +125,17 @@ def main(argv):
         }
 
 
+    # This function parses the NHPI data base into our region objects.
     NHPI_parsing( NHPI_filename, year_period, NHPI_method_to_match, regions)
 
+    # This function parses the voting results into our region objects.
     vote_parsing( voting_filename, regions, region_dict )
 
-
+    # This loops through the array of region objects and transforms the data and prints out the contents of the data.
     for geo_region in regions:
-        number_to_percent(geo_region)
+        # This function turns the count of seats distributed to the parties into a percent based on the amount of seats distributed to each party.
+
+        # prints out the contents of the region objects.
         print(f"Percent calulated for {geo_region.name} is {geo_region.NHPI_percent}")
         print(f"Liberals: {geo_region.party_seats["Liberal"]}%")
         print(f"CPC: {geo_region.party_seats["Conservative"]}%")
@@ -136,9 +143,13 @@ def main(argv):
         print(f"NDP: {geo_region.party_seats["New Democratic"]}%")
         print(f"GP: {geo_region.party_seats["Green"]}%")
 
+    # This function creates a grouped bar chart of the gathered and transformed data.
     visualization(regions, year_period, NHPI_method_to_match)
 
 
+##
+## NHPI_parsing: 
+## This function parses the data from the New Housing Price Index data table 
 def NHPI_parsing(filename, year_period, NHPI_method_to_match, regions):
 
     infile = open_csv_file(filename)
