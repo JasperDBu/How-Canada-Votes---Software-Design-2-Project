@@ -79,7 +79,7 @@ def main(argv):
 
     plt.xlabel("Healthcare Access (%)")
     plt.ylabel("Voter Turnout (%)")
-    plt.title("Healthcare Access vs Voter Turnout (2019-2020)")
+    plt.title("Voter Turnout vs Healthcare Access (2019-2020)")
     plt.grid(True)
     plt.tight_layout()
 
