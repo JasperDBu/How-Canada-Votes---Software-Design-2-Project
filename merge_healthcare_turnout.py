@@ -1,3 +1,28 @@
+'''
+merge_healthcare_turnout.py
+  Author(s): Jasper Bungay (1384647), Lincoln Fiser (1385739), Harveen Harveen (1337280)
+
+  Project: Team Project
+  Date of Last Update: Mar 23, 2026.
+
+  Functional Summary
+        This code merges the two files (Election & Healthcare Data). It merges the two into a single
+        csv file by matching the specific values to Province name so it can be inputed onto a graph
+        based on this new merged file it will read from. The final output generates a combined table 
+        containing province name, healthcare access value (%), and 2019 voter turnout (%).
+
+     Commandline Parameters: 4
+        argv[1] = 
+
+     References:
+        * Statistics Canada – Access to a healthcare provider (processed).
+            
+        * Elections Canada – Voting results by electoral district for the 43rd General Election
+              https://www.elections.ca/content.aspx?section=res&dir=rep/off/45gedata&document=summary&lang=e
+'''
+
+
+
 import sys
 import csv
 
